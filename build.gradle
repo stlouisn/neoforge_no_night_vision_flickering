@@ -1,51 +1,78 @@
 plugins {
-    id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
+    id "dev.architectury.loom" version "${architectury_loom_version}-SNAPSHOT"
+    id "architectury-plugin" version "${architectury_plugin_version}-SNAPSHOT"
+    id "java-library"
 }
 
-architectury {
-    minecraft = rootProject.minecraft_version
-}
+architectury { minecraft = minecraft_version }
 
-subprojects {
-    apply plugin: "dev.architectury.loom"
+group = maven_group
+version = mod_version
 
+base { archivesName = "${archives_base_name}-${minecraft_version}-neoforge" }
+
+repositories { maven { url = "https://maven.neoforged.net/releases" } }
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    neoForge "net.neoforged:neoforge:${neoforge_version}"
     loom {
-        silentMojangMappingsLicense()
+        if (file("src/main/resources/${archives_base_name}.accesswidener").exists()) {
+            accessWidenerPath = file("src/main/resources/${archives_base_name}.accesswidener")
+        }
     }
+    implementation "org.jetbrains:annotations:latest.release"
+}
 
-    dependencies {
-        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-        // The following line declares the mojmap mappings, you may use other mappings as well
-        //mappings loom.officialMojangMappings()
-        // The following line declares the yarn mappings you may select this one as well.
-         mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}:v2"
+apply from: "build-mappings.gradle"
+
+if (file("build-dependencies.gradle").exists()) { apply from: "build-dependencies.gradle" }
+
+if (file("src/main/resources/*.mixins.json")) { apply from: "build-mixins.gradle" }
+
+if (file("build-runtime.gradle").exists()) { apply from: "build-runtime.gradle" }
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
     }
 }
 
-allprojects {
-    apply plugin: "java"
-    apply plugin: "architectury-plugin"
-    apply plugin: "maven-publish"
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
 
-    archivesBaseName = rootProject.archives_base_name
-    version = rootProject.mod_version
-    group = rootProject.maven_group
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = "UTF-8"
+}
 
-    repositories {
-        // Add repositories to retrieve artifacts from in here.
-        // You should only use this when depending on other mods because
-        // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-        // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-        // for more information about repositories.
-    }
-
-    tasks.withType(JavaCompile) {
-        options.encoding = "UTF-8"
-        options.release.set(21)
-    }
-
-    java {
-        withSourcesJar()
+processResources {
+    def stringProperties = providers.gradlePropertiesPrefixedBy('').get()
+    stringProperties.each { inputs.property(it.key, it.value) }
+    ["META-INF/neoforge.mods.toml"].each {
+        filesMatching(it) {
+            expand(stringProperties) { escapeBackslash = true }
+        }
     }
 }
+
+jar {
+    manifest {
+        attributes(
+            [
+                "Specification-Title"     : mod_id,
+                "Specification-Vendor"    : mod_authors,
+                "Specification-Version"   : "1",
+                "Implementation-Title"    : mod_name,
+                "Implementation-Version"  : mod_version,
+                "Implementation-Vendor"   : mod_authors,
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            ]
+        )
+    }
+}
+
+remapJar { destinationDirectory.set(file("${rootDir}/files")) }

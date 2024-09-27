@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.no_night_vision_flickering.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8.5",
+  "client": [
+    "MixinGameRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
