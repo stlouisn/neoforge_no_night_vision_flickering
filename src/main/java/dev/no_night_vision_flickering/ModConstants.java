@@ -1,4 +1,4 @@
-package dev.no_night_vision_flickering.utils;
+package dev.no_night_vision_flickering;
 
 public final class ModConstants {
 

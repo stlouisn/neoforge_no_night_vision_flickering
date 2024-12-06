@@ -1,12 +1,16 @@
 package dev.no_night_vision_flickering;
 
-import dev.no_night_vision_flickering.utils.ModConstants;
+import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("unused")
-public final class NoNightVisionFlickering {
+public final class NoNightVisionFlickering implements ModInitializer {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(ModConstants.MOD_ID);
+	@SuppressWarnings("unused")
+  public static final Logger LOGGER = LoggerFactory.getLogger(ModConstants.MOD_ID);
+
+	@Override
+	public void onInitialize() {
+	}
 
 }
