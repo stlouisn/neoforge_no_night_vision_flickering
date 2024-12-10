@@ -21,7 +21,7 @@
     ]
   },
   "mixins": [
-    "no_night_vision_flickering.mixins.json"
+    "no-night-vision-flickering.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
